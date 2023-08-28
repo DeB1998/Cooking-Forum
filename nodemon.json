@@ -1,0 +1,14 @@
+{
+    "delay": 1000,
+    "exec": "node",
+    "ext": "js,js.map",
+    "nodeArgs": [
+        "--preserve-symlinks",
+        "--preserve-symlinks-main",
+        "--require",
+        "ts-node/register"
+    ],
+    "signal": "SIGQUIT",
+    "verbose": true,
+    "watch": ["./build"]
+}

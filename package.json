@@ -6,15 +6,31 @@
     "author": "Alessio De Biasi",
     "license": "ISC",
     "scripts": {
-        "start": "node ./bin/www"
+        "compile-sources": "tsc --project tsconfig.app.json",
+        "compile-tests": "tsc --project tsconfig.spec.json",
+        "start": "node --preserve-symlinks --preserve-symlinks-main --require ts-node/register ./build/src/main",
+        "start-development": "nodemon ./build/src/main"
     },
     "dependencies": {
+        "dotenv": "^16.3.1",
         "express": "^4.18.2",
-        "morgan": "^1.10.0"
+        "pino": "^8.15.0",
+        "pino-pretty": "^10.2.0",
+        "ts-node": "^10.9.1",
+        "tslib": "^2.6.2"
     },
     "devDependencies": {
         "@babel/parser": "^7.22.11",
+        "@types/chai": "^4.3.5",
+        "@types/express": "^4.17.17",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "^20.5.7",
+        "chai": "^4.3.8",
+        "chai-http": "^4.4.0",
+        "mocha": "^10.2.0",
+        "nodemon": "^3.0.1",
         "prettier": "^3.0.2",
-        "prettier-plugin-sh": "^0.13.1"
+        "prettier-plugin-sh": "^0.13.1",
+        "typescript": "^5.2.2"
     }
 }
