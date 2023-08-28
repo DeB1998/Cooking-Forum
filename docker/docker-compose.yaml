@@ -1,0 +1,17 @@
+version: "3.5"
+
+services:
+    cooking-forum-postgres:
+        container_name: "cooking-forum-postgres"
+        image: "postgres:alpine"
+        environment:
+            - "POSTGRES_USER=postgres-user"
+            - "POSTGRES_PASSWORD=postgres-password"
+            - "POSTGRES_DB=postgres-db"
+        ports:
+            - "5432:5432"
+        volumes:
+            - "cooking_forum_postgres_data:/var/lib/postgresql/data"
+
+volumes:
+    cooking_forum_postgres_data:

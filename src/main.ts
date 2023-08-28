@@ -1,24 +1,36 @@
 // noinspection FallThroughInSwitchStatementJS
 
-
+import * as console from "console";
 import express from "express";
 import http from "http";
 import dotenv from "dotenv";
 import process from "node:process";
 import usersRouter from "./routes/users";
-
+import {Client} from "pg";
 import {Logger} from "./utils/Logger";
-
-
 
 dotenv.config();
 
-const logger = Logger.createLogger();
-console.log(process.cwd());
-logger.info("Starting the server");
-logger.debug("Starting the server");
+async function f() {
+    const logger = Logger.createLogger();
+    console.log(process.cwd());
+    logger.info("Starting the server");
+    logger.debug("Starting the server");
 
+    const client = new Client({
+        host: process.env["DATABASE_HOST"],
+        port: parseInt(process.env["DATABASE_PORT"] || "5432"),
+        database: process.env["DATABASE_NAME"],
+        user: process.env["DATABASE_USER"],
+        password: process.env["DATABASE_PASSWORD"]
+    });
+    await client.connect();
 
+    const result = await client.query("SELECT * FROM users");
+    logger.debug(result)
+}
+
+f().then();
 
 //const app = express();
 

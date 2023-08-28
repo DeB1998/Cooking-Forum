@@ -8,3 +8,6 @@ out/
 ### Node.js ###
 build
 node_modules
+
+### Other ###
+.env
