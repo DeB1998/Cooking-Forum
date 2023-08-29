@@ -7,13 +7,27 @@ Content-Type: application/json
     "surname": "Test",
     "email": "test@test.com",
     "password": "Test123_",
-    "twoFactorAuthentication": false
+    "twoFactorAuthentication": true
 }
+
 
 ### Basic authorization.
 GET http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test123_
 
+> {%
+    client.global.set("jwt", response.body.jwt);
+%}
+
 ### Basic authorization.
 GET http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test1234_
+
+### Basic authorization.
+GET http://127.0.0.1:5000/jwt/2fa
+Authorization: Bearer {{jwt}}
+Content-Type: application/json
+
+{
+    "otp": "959588"
+}

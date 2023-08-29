@@ -6,7 +6,7 @@ CREATE TABLE public.users
     surname                   VARCHAR(64)  NOT NULL,
     email                     VARCHAR(255) NOT NULL UNIQUE,
     "password"                CHAR(60)     NOT NULL,
-    two_factor_authentication BOOL
+    two_factor_authentication BOOL         NOT NULL
 );
 GRANT INSERT, UPDATE, DELETE, SELECT ON public.users TO cooking_forum;
 GRANT UPDATE, SELECT, USAGE ON SEQUENCE public.users_id_seq TO cooking_forum;

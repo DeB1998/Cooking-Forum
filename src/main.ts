@@ -6,8 +6,11 @@ import {ErrorRequestHandler} from "express-serve-static-core";
 import http from "http";
 import process from "node:process";
 import passport from "passport";
+import {expressjwt} from "express-jwt";
 import {BasicStrategy} from "passport-http";
 import {BasicAuthentication} from "./authentication/basic/BasicAuthentication";
+import {OtpSender} from "./authentication/otp/OptSender";
+import {OtpManager} from "./authentication/otp/OtpManager";
 import {ErrorController} from "./controller/ErrorController";
 import {LoginController} from "./controller/LoginController";
 import {UserController} from "./controller/UserController";
@@ -93,9 +96,11 @@ if (jwtSecret === undefined || jwtSecret.length === 0) {
     process.exit(1);
 }
 const jwtManager = new JwtManager(jwtSecret);
+const otpSender = new OtpSender();
+const otpManager = new OtpManager(passwordManager, otpSender);
 const userRepository = new UserRepository(databaseConnection, passwordManager);
 const userController = new UserController(userRepository);
-const loginController = new LoginController(jwtManager);
+const loginController = new LoginController(jwtManager, otpManager);
 const errorController = new ErrorController();
 const basicAuthentication = new BasicAuthentication(userRepository);
 
@@ -113,10 +118,23 @@ usersRouter.post(
     (request, response, next) => userController.createUser(request, response, next)
 );
 
+const jwtExtractorMiddleware = expressjwt({
+    secret: jwtSecret,
+    algorithms: ["HS256"],
+    issuer: JwtManager.JWT_ISSUER
+});
 const loginRouter = express.Router();
-loginRouter.get("/",
-    passport.authenticate("basic", {session: false}),
-    (request, response, next) => loginController.createJwt(request, response, next));
+loginRouter
+    .get("/", passport.authenticate("basic", {session: false}), (request, response, next) =>
+        loginController.createJwt(request, response, next)
+    )
+    .get(
+        "/2fa",
+        jwtExtractorMiddleware,
+        (request, response, next) =>
+            loginController.checkTwoFactorAuthRequest(request, response, next),
+        (request, response, next) => loginController.verifyOtp(request, response, next)
+    );
 const errorHandler: ErrorRequestHandler = (error, request, response, next) =>
     errorController.handleErrors(error, request, response, next);
 
