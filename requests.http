@@ -1,0 +1,11 @@
+### Send POST request with json body
+POST http://127.0.0.1:5000/users
+Content-Type: application/json
+
+{
+    "name": "Test",
+    "surname": "Test",
+    "email": "test@test.com",
+    "password": "Test123_",
+    "twoFactorAuthentication": true
+}

@@ -1,9 +1,12 @@
 DROP TABLE IF EXISTS public.users;
 CREATE TABLE public.users
 (
-    id       SERIAL,
-    name     VARCHAR(64)  NOT NULL,
-    surname  VARCHAR(64)  NOT NULL,
-    email    VARCHAR(255) NOT NULL,
-    password CHAR(255)    NOT NULL /* TODO: Check length*/
+    id                        SERIAL PRIMARY KEY,
+    "name"                    VARCHAR(64)  NOT NULL,
+    surname                   VARCHAR(64)  NOT NULL,
+    email                     VARCHAR(255) NOT NULL UNIQUE,
+    "password"                CHAR(72)     NOT NULL,
+    two_factor_authentication BOOL
 );
+GRANT INSERT, UPDATE, DELETE, SELECT ON public.users TO cooking_forum;
+GRANT UPDATE, SELECT, USAGE ON SEQUENCE public.users_id_seq TO cooking_forum;

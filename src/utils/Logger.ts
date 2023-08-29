@@ -7,11 +7,11 @@ export class Logger {
         const prettyOptions: PrettyOptions = {
             colorizeObjects: true,
             crlf: false,
-            errorLikeObjectKeys: ["stack"],
+            errorLikeObjectKeys: ["err", "error"],
             translateTime: true,
             hideObject: false,
             singleLine: false,
-            customColors: "err:red,warn:yellow,info:green,debug:blue",
+            customColors: "error:red,warn:yellow,info:green,debug:blue",
             ignore: "pid,hostname",
             destination: 1,
             minimumLevel: "trace"
