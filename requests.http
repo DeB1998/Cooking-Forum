@@ -31,3 +31,18 @@ Content-Type: application/json
 {
     "otp": "959588"
 }
+
+### Basic authorization.
+GET http://127.0.0.1:5000/non-existent
+
+### Basic authorization.
+POST http://127.0.0.1:5000/not-found
+Authorization: Basic test@test.com Test1234_
+
+{}
+
+### Basic authorization.
+POST http://127.0.0.1:5000/jwt
+Authorization: Basic test@test.com Test1234_
+
+{}

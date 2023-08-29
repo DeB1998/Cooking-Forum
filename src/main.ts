@@ -2,13 +2,15 @@
 
 import dotenv from "dotenv";
 import express from "express";
+import {expressjwt} from "express-jwt";
 import {ErrorRequestHandler} from "express-serve-static-core";
 import http from "http";
 import process from "node:process";
 import passport from "passport";
-import {expressjwt} from "express-jwt";
 import {BasicStrategy} from "passport-http";
 import {BasicAuthentication} from "./authentication/basic/BasicAuthentication";
+import {PasswordManager} from "./authentication/basic/PasswordManager";
+import {JwtManager} from "./authentication/jwt/JwtManager";
 import {OtpSender} from "./authentication/otp/OptSender";
 import {OtpManager} from "./authentication/otp/OtpManager";
 import {ErrorController} from "./controller/ErrorController";
@@ -16,9 +18,8 @@ import {LoginController} from "./controller/LoginController";
 import {UserController} from "./controller/UserController";
 import {UserRepository} from "./repository/UserRepository";
 import {DatabaseConnection} from "./utils/DatabaseConnection";
-import {JwtManager} from "./authentication/jwt/JwtManager";
+import {InvalidEndpointError} from "./utils/InvalidEndpointError";
 import {Logger} from "./utils/Logger";
-import {PasswordManager} from "./authentication/basic/PasswordManager";
 
 const logger = Logger.createLogger();
 
@@ -144,6 +145,13 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use("/users", usersRouter);
 app.use("/jwt", loginRouter);
+app.use("*", (request, response, next) => {
+    next(
+        new InvalidEndpointError(
+            `Invalid endpoint '${request.baseUrl}' with HTTP method '${request.method}'`
+        )
+    );
+});
 app.use(errorHandler);
 
 // Get the port
