@@ -1,8 +1,12 @@
 import {NewUser, User} from "../entity/User";
 import {DatabaseConnection} from "../utils/DatabaseConnection";
-import {PasswordManager} from "../utils/PasswordManager";
+import {InvalidValueError} from "../utils/InvalidValueError";
+import {Logger} from "../utils/Logger";
+import {PasswordManager} from "../authentication/basic/PasswordManager";
 
 export class UserRepository {
+    private static readonly LOGGER = Logger.createLogger();
+
     private readonly databaseConnection: DatabaseConnection;
     private passwordManager: PasswordManager;
 
@@ -17,6 +21,12 @@ export class UserRepository {
         try {
             // Encode the password
             const encodedPassword = await this.passwordManager.encodePassword(password);
+            if (encodedPassword.length !== 60) {
+                UserRepository.LOGGER.fatal(
+                    `The encoded password has length ${encodedPassword.length}`
+                );
+                throw new InvalidValueError("Password error");
+            }
             // Insert the user
             const query = `INSERT INTO users(name, surname, email, password, two_factor_authentication)
                            VALUES ($1, $2, $3, $4, $5)
@@ -38,25 +48,29 @@ export class UserRepository {
         const client = await this.databaseConnection.getClient();
 
         try {
-            // Encode the password
-            const encodedPassword = await this.passwordManager.encodePassword(password);
             // Select the user
-            const userSelectionQuery = `SELECT id, name, surname, email, two_factor_authentication
+            const userSelectionQuery = `SELECT id,
+                                               name,
+                                               surname,
+                                               email,
+                                               password,
+                                               two_factor_authentication AS "twoFactorAuthentication"
                                         FROM users
                                         WHERE email = $1
-                                          AND password = $2
                                         LIMIT 1`;
-            const result = await client.query(userSelectionQuery, [email, encodedPassword]);
+            const result = await client.query(userSelectionQuery, [email]);
             // Extract the result
             if (result.rowCount === 1) {
-                const row = result.rows[0] as [number, string, string, string, boolean];
-                return {
-                    id: row[0],
-                    name: row[1],
-                    surname: row[2],
-                    email: row[3],
-                    twoFactorAuthentication: row[4]
-                };
+                const row = result.rows[0] as User & {password: string};
+                if (await this.passwordManager.verifyPassword(password, row.password)) {
+                    return {
+                        id: row.id,
+                        name: row.name,
+                        surname: row.surname,
+                        email: row.email,
+                        twoFactorAuthentication: row.twoFactorAuthentication
+                    };
+                }
             }
             return null;
         } finally {

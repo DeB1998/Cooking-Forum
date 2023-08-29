@@ -7,5 +7,13 @@ Content-Type: application/json
     "surname": "Test",
     "email": "test@test.com",
     "password": "Test123_",
-    "twoFactorAuthentication": true
+    "twoFactorAuthentication": false
 }
+
+### Basic authorization.
+GET http://127.0.0.1:5000/jwt
+Authorization: Basic test@test.com Test123_
+
+### Basic authorization.
+GET http://127.0.0.1:5000/jwt
+Authorization: Basic test@test.com Test1234_

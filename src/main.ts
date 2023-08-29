@@ -5,12 +5,17 @@ import express from "express";
 import {ErrorRequestHandler} from "express-serve-static-core";
 import http from "http";
 import process from "node:process";
+import passport from "passport";
+import {BasicStrategy} from "passport-http";
+import {BasicAuthentication} from "./authentication/basic/BasicAuthentication";
 import {ErrorController} from "./controller/ErrorController";
+import {LoginController} from "./controller/LoginController";
 import {UserController} from "./controller/UserController";
 import {UserRepository} from "./repository/UserRepository";
 import {DatabaseConnection} from "./utils/DatabaseConnection";
+import {JwtManager} from "./authentication/jwt/JwtManager";
 import {Logger} from "./utils/Logger";
-import {PasswordManager} from "./utils/PasswordManager";
+import {PasswordManager} from "./authentication/basic/PasswordManager";
 
 const logger = Logger.createLogger();
 
@@ -82,9 +87,23 @@ const databaseConnection = new DatabaseConnection(
 const passwordManager = new PasswordManager(
     parseInt(process.env["PASSWORD_SALT_ROUNDS"] || "10") || 10
 );
+const jwtSecret = process.env["JWT_SECRET"];
+if (jwtSecret === undefined || jwtSecret.length === 0) {
+    logger.error("The JWT secret key must be provided as a non-empty environment variable");
+    process.exit(1);
+}
+const jwtManager = new JwtManager(jwtSecret);
 const userRepository = new UserRepository(databaseConnection, passwordManager);
 const userController = new UserController(userRepository);
+const loginController = new LoginController(jwtManager);
 const errorController = new ErrorController();
+const basicAuthentication = new BasicAuthentication(userRepository);
+
+passport.use(
+    new BasicStrategy((email, password, done) =>
+        basicAuthentication.authenticate(email, password, done)
+    )
+);
 
 // Create the routes
 const usersRouter = express.Router();
@@ -93,6 +112,11 @@ usersRouter.post(
     (request, response, next) => userController.checkUserCreationRequest(request, response, next),
     (request, response, next) => userController.createUser(request, response, next)
 );
+
+const loginRouter = express.Router();
+loginRouter.get("/",
+    passport.authenticate("basic", {session: false}),
+    (request, response, next) => loginController.createJwt(request, response, next));
 const errorHandler: ErrorRequestHandler = (error, request, response, next) =>
     errorController.handleErrors(error, request, response, next);
 
@@ -101,6 +125,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 app.use("/users", usersRouter);
+app.use("/jwt", loginRouter);
 app.use(errorHandler);
 
 // Get the port

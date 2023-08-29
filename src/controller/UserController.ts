@@ -2,7 +2,7 @@ import {NextFunction, Request, Response} from "express-serve-static-core";
 import {Schema, Validator} from "jsonschema";
 import * as EmailValidator from "email-validator";
 import {UserRepository} from "../repository/UserRepository";
-import {InvalidRequestError} from "../utils/InvalidRequestError";
+import {InvalidRequestError} from "./InvalidRequestError";
 import {UserCreationRequest} from "./request/UserCreationRequest";
 import {UserCreationResponse} from "./response/UserCreationResponse";
 

@@ -5,7 +5,7 @@ CREATE TABLE public.users
     "name"                    VARCHAR(64)  NOT NULL,
     surname                   VARCHAR(64)  NOT NULL,
     email                     VARCHAR(255) NOT NULL UNIQUE,
-    "password"                CHAR(72)     NOT NULL,
+    "password"                CHAR(60)     NOT NULL,
     two_factor_authentication BOOL
 );
 GRANT INSERT, UPDATE, DELETE, SELECT ON public.users TO cooking_forum;
