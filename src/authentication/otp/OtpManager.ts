@@ -13,7 +13,7 @@ export class OtpManager {
 
     public async generateOtp() {
         const otp = crypto.randomInt(0, 1_000_000);
-        const otpString = `${otp}`;
+        const otpString = `${otp}`.padStart(6, "0");
 
         await this.otpSender.sendOtp(otpString);
 

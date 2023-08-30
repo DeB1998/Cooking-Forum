@@ -1,29 +1,13 @@
 // noinspection FallThroughInSwitchStatementJS
 
 import dotenv from "dotenv";
-import express from "express";
-import {expressjwt} from "express-jwt";
-import {ErrorRequestHandler, NextFunction, Request, Response} from "express-serve-static-core";
-import http from "http";
 import process from "node:process";
-import passport from "passport";
-import {BasicStrategy} from "passport-http";
 import {Application} from "./Application";
 import {ApplicationConfiguration} from "./ApplicationConfiguration";
-import {BasicAuthentication} from "./authentication/basic/BasicAuthentication";
-import {PasswordManager} from "./authentication/basic/PasswordManager";
-import {JwtManager} from "./authentication/jwt/JwtManager";
 import {OtpSender} from "./authentication/otp/OptSender";
-import {OtpManager} from "./authentication/otp/OtpManager";
-import {ErrorController} from "./controller/ErrorController";
-import {LoginController} from "./controller/LoginController";
-import {UserController} from "./controller/UserController";
-import {UserRepository} from "./repository/UserRepository";
-import {DatabaseConnection} from "./utils/DatabaseConnection";
-import {InvalidEndpointError} from "./utils/InvalidEndpointError";
 import {Logger} from "./utils/Logger";
 
-export class ConsoleOtpSender implements OtpSender {
+class ConsoleOtpSender implements OtpSender {
     private static readonly LOGGER = Logger.createLogger();
 
     public async sendOtp(otp: string) {

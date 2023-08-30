@@ -8,35 +8,14 @@ import {DatabaseConnection} from "../src/utils/DatabaseConnection";
 import {DatabaseCleaner} from "./utils/DatabaseCleaner";
 import {expect} from "chai";
 import {ObjectCopy} from "./utils/ObjectCopy";
+import {RandomValues} from "./utils/RandomValues";
 import {Tester} from "./utils/Tester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
 const HOST = "http://127.0.0.1:5000";
-const voidValues = [null, undefined];
-const randomNumberValues = [1, 50, 3.4];
-const randomBooleanValues = [true, false];
-const randomObjectValues: object[] = [
-    {},
-    {eee: 123},
-    {aaa: "bcd"},
-    {fgh: 3, abc: "eeee"},
-    {abc: [123, "aaaa"]},
-    {efg: {abc: [1, 4, 7, 9], efg: false}}
-];
-const randomArrayValues: any[] = [
-    ["abc", "eee"],
-    [1, 3],
-    ["abc", 123, null, true],
-    [],
-    [{a: 56}, {}]
-];
-const randomStringValues = Array.from(["sddsds", "fffff", "eee", "null", "undefined"]).concat(
-    Array.from<any>(randomNumberValues)
-        .concat(randomBooleanValues, randomObjectValues, randomArrayValues)
-        .map((value) => JSON.stringify(value))
-);
+
 describe("User registration", () => {
     const result = dotenv.config();
     if (result.error !== undefined) {
@@ -102,27 +81,27 @@ describe("User registration", () => {
     });
     it("Malformed fields", async () => {
         const names = Array.from<any>(["", "Too long name, which is very long"]).concat(
-            voidValues,
-            randomNumberValues,
-            randomBooleanValues,
-            randomObjectValues,
-            randomArrayValues
+            RandomValues.VOID_VALUES,
+            RandomValues.NUMBER_VALUES,
+            RandomValues.BOOLEAN_VALUES,
+            RandomValues.OBJECT_VALUES,
+            RandomValues.ARRAY_VALUES
         );
         const values = new Map<keyof (NewUser & Record<"password", string>), any[]>();
         values.set("name", names);
         values.set("surname", names);
         values.set(
             "email",
-            Array.from(["aaaa#aaa.com", "eee@a", "123@", ".."]).concat(names, randomStringValues)
+            Array.from(["aaaa#aaa.com", "eee@a", "123@", ".."]).concat(names, RandomValues.STRING_VALUES)
         );
-        values.set("password", Array.from(names).concat(randomStringValues));
+        values.set("password", Array.from(names).concat(RandomValues.STRING_VALUES));
         values.set(
             "twoFactorAuthentication",
-            Array.from<any>(voidValues).concat(
-                randomNumberValues,
-                randomObjectValues,
-                randomArrayValues,
-                randomStringValues
+            Array.from<any>(RandomValues.VOID_VALUES).concat(
+                RandomValues.NUMBER_VALUES,
+                RandomValues.OBJECT_VALUES,
+                RandomValues.ARRAY_VALUES,
+                RandomValues.STRING_VALUES
             )
         );
 
@@ -164,12 +143,12 @@ describe("User registration", () => {
     });
     it("Additional fields", async () => {
         const additionalFieldNames = ["newField", "27", "additionalField", "NoField", "extra"];
-        const values = Array.from<any>(randomStringValues).concat(
+        const values = Array.from<any>(RandomValues.STRING_VALUES).concat(
             [null],
-            randomNumberValues,
-            randomBooleanValues,
-            randomObjectValues,
-            randomArrayValues
+            RandomValues.NUMBER_VALUES,
+            RandomValues.BOOLEAN_VALUES,
+            RandomValues.OBJECT_VALUES,
+            RandomValues.ARRAY_VALUES
         );
         const malformedUser: {[key: string]: any} = user;
         const users: NewUser[] = [];

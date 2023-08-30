@@ -1,3 +1,4 @@
+import {UnauthorizedError} from "express-jwt";
 import {NextFunction, Response} from "express-serve-static-core";
 import {StatusCodes} from "http-status-codes";
 import {ValidationError} from "jsonschema";
@@ -22,7 +23,11 @@ export class ErrorController {
                 response.status(StatusCodes.FORBIDDEN);
             } else if (error instanceof InvalidEndpointError) {
                 response.status(StatusCodes.NOT_FOUND);
-            } else if (error instanceof ValidationError || error instanceof InvalidRequestError) {
+            } else if (
+                error instanceof ValidationError ||
+                error instanceof InvalidRequestError ||
+                error instanceof UnauthorizedError
+            ) {
                 response.status(StatusCodes.BAD_REQUEST);
             } else {
                 response.status(StatusCodes.INTERNAL_SERVER_ERROR);

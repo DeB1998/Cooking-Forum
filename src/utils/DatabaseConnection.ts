@@ -21,7 +21,7 @@ export class DatabaseConnection {
             password
         });
         DatabaseConnection.LOGGER.debug(
-            `Created the connection pool to ${host}:${port} on database ${database} with user ${user}`
+            `Created the connection pool to ${host}:${port} on database '${database}' with user '${user}'`
         );
     }
 

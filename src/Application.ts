@@ -66,21 +66,21 @@ export class Application {
             issuer: JwtManager.JWT_ISSUER
         });
         const loginRouter = express.Router();
-        loginRouter
-            .get(
-                "/",
-                (request: Request, response: Response, next: NextFunction) =>
-                    loginController.authenticate(request, response, next),
-                (request: Request, response: Response, next: NextFunction) =>
-                    loginController.createJwt(request, response, next)
-            )
-            .get(
-                "/2fa",
-                jwtExtractorMiddleware,
-                (request, response, next) =>
-                    loginController.checkTwoFactorAuthRequest(request, response, next),
-                (request, response, next) => loginController.verifyOtp(request, response, next)
-            );
+        loginRouter.get(
+            "/",
+            (request: Request, response: Response, next: NextFunction) =>
+                loginController.authenticate(request, response, next),
+            (request: Request, response: Response, next: NextFunction) =>
+                loginController.createJwt(request, response, next)
+        );
+        const twoFactorAuthRouter = express.Router();
+        twoFactorAuthRouter.get(
+            "/jwt",
+            jwtExtractorMiddleware,
+            (request, response, next) =>
+                loginController.checkTwoFactorAuthRequest(request, response, next),
+            (request, response, next) => loginController.verifyOtp(request, response, next)
+        );
         const errorHandler: ErrorRequestHandler = (error, request, response, next) =>
             errorController.handleErrors(error, request, response, next);
 
@@ -90,6 +90,7 @@ export class Application {
         app.use(express.urlencoded({extended: false}));
         app.use("/users", usersRouter);
         app.use("/jwt", loginRouter);
+        app.use("/2fa", twoFactorAuthRouter);
         app.use("*", (request, response, next) => {
             next(
                 new InvalidEndpointError(
@@ -124,7 +125,6 @@ export class Application {
     }
 
     public close() {
-
         this.httpServer.close();
     }
 
