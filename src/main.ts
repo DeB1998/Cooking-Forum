@@ -66,11 +66,30 @@ const passwordSaltRounds = parseAsInt(
     "The password salt rounds count is not a valid number"
 );
 if (passwordSaltRounds <= 0) {
-    logger.error("The password salt rounds count is not valid");
+    logger.error("The password salt rounds count  must not be negative");
     process.exit(1);
 }
 if (jwtSecret === undefined || jwtSecret.length === 0) {
     logger.error("The JWT secret key must be provided as a non-empty environment variable");
+    process.exit(1);
+}
+
+const sessionDuration = parseAsInt(
+    process.env["SESSION_DURATION"],
+    "The session duration must be provided as a non-empty environment variable",
+    "The session duration is not a valid number"
+);
+if (sessionDuration <= 0) {
+    logger.error("The session duration must not be negative");
+    process.exit(1);
+}
+const otpDuration = parseAsInt(
+    process.env["OTP_DURATION"],
+    "The OTP duration must be provided as a non-empty environment variable",
+    "The OTP duration is not a valid number"
+);
+if (otpDuration <= 0) {
+    logger.error("The OTP duration must not be negative");
     process.exit(1);
 }
 
@@ -83,7 +102,9 @@ const applicationConfiguration: ApplicationConfiguration = {
     databasePassword: process.env["DATABASE_PASSWORD"],
     passwordSaltRounds,
     jwtSecret,
-    otpSender: new ConsoleOtpSender()
+    sessionDuration,
+    otpSender: new ConsoleOtpSender(),
+    otpDuration
 };
 
 // Create the application

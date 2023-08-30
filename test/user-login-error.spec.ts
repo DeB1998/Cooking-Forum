@@ -2,12 +2,13 @@ import chai from "chai";
 import chaiHttp from "chai-http";
 import dotenv from "dotenv";
 import {StatusCodes} from "http-status-codes";
-import {Test} from "mocha";
 import process from "node:process";
 import {NewUser} from "../src/entity/User";
 import {DatabaseConnection} from "../src/utils/DatabaseConnection";
 import {DatabaseCleaner} from "./utils/DatabaseCleaner";
 import {Tester} from "./utils/Tester";
+import {TestOtpSender} from "./utils/TestOtpSender";
+import {TestRequester} from "./utils/TestRequester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
@@ -44,6 +45,7 @@ describe("User login error", () => {
     if (result.error !== undefined) {
         throw result.error;
     }
+    const requester = TestRequester.createRequester(new TestOtpSender());
     const databaseConnection = new DatabaseConnection(
         process.env["DATABASE_HOST"] || "127.0.0.1",
         parseInt(process.env["DATABASE_PORT"] || "5432"),
@@ -55,7 +57,7 @@ describe("User login error", () => {
     let user: TestUser;
     let user2fa: TestUser;
     const tester = new Tester((value: [string, string]) =>
-        chai.request(HOST).get("/jwt").auth(value[0], value[1], {type: "basic"}).send()
+        requester.get("/jwt").auth(value[0], value[1], {type: "basic"}).send()
     );
 
     beforeEach(async () => {
@@ -75,8 +77,8 @@ describe("User login error", () => {
             twoFactorAuthentication: true
         };
         return Promise.all([
-            chai.request(HOST).post("/users").send(user),
-            chai.request(HOST).post("/users").send(user2fa)
+            requester.post("/users").send(user),
+            requester.post("/users").send(user2fa)
         ]);
     });
 
@@ -85,7 +87,7 @@ describe("User login error", () => {
         await testWrongCredentials(tester, user2fa);
     });
     it("Missing credentials", async () => {
-        const noCredentialsTester = new Tester(() => chai.request(HOST).get("/jwt").send());
+        const noCredentialsTester = new Tester(() => requester.get("/jwt").send());
         await noCredentialsTester.toBeErrorred({}, StatusCodes.FORBIDDEN);
     });
 });

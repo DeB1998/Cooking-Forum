@@ -5,14 +5,14 @@ import {StatusCodes} from "http-status-codes";
 import jsonwebtoken from "jsonwebtoken";
 import process from "node:process";
 import {Response} from "superagent";
-import {Application} from "../src/Application";
-import {OtpSender} from "../src/authentication/otp/OptSender";
 import {NewUser} from "../src/entity/User";
 import {DatabaseConnection} from "../src/utils/DatabaseConnection";
 import {DatabaseCleaner} from "./utils/DatabaseCleaner";
 import {ObjectCopy} from "./utils/ObjectCopy";
 import {RandomValues} from "./utils/RandomValues";
 import {Tester} from "./utils/Tester";
+import {TestOtpSender} from "./utils/TestOtpSender";
+import {TestRequester} from "./utils/TestRequester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
@@ -20,22 +20,6 @@ chai.config.truncateThreshold = 0;
 const HOST = "http://127.0.0.1:5000";
 
 type TestUser = NewUser & Record<"password", string>;
-
-class TestOtpSender implements OtpSender {
-    private otp: string;
-
-    constructor() {
-        this.otp = "";
-    }
-
-    public getOtp() {
-        return this.otp;
-    }
-
-    public async sendOtp(otp: string) {
-        this.otp = otp;
-    }
-}
 
 class LoginRequestSender {
     private requester: ChaiHttp.Agent;
@@ -68,6 +52,8 @@ describe("User login 2FA", () => {
     if (result.error !== undefined) {
         throw result.error;
     }
+    const otpSender = new TestOtpSender();
+    const requester = TestRequester.createRequester(otpSender);
     const databaseConnection = new DatabaseConnection(
         process.env["DATABASE_HOST"] || "127.0.0.1",
         parseInt(process.env["DATABASE_PORT"] || "5432"),
@@ -77,20 +63,7 @@ describe("User login 2FA", () => {
     );
     const databaseCleaner = new DatabaseCleaner(databaseConnection);
     let user: TestUser;
-    const otpSender = new TestOtpSender();
     const jwtSecret = process.env["JWT_SECRET"] || "";
-    const application = new Application({
-        serverPort: "5000",
-        databaseHost: process.env["DATABASE_HOST"] || "127.0.0.1",
-        databasePort: parseInt(process.env["DATABASE_PORT"] || "5432"),
-        databaseName: process.env["DATABASE_NAME"] || "",
-        databaseUser: process.env["DATABASE_USER"] || "",
-        databasePassword: process.env["DATABASE_PASSWORD"] || "",
-        passwordSaltRounds: 10,
-        jwtSecret,
-        otpSender
-    });
-    const requester = chai.request(application.getHttpServer()).keepOpen();
     let loginRequestSender: LoginRequestSender;
     const tester = new Tester((value: [string, any]) =>
         requester.get("/2fa/jwt").auth(value[0], {type: "bearer"}).send(value[1])
@@ -125,10 +98,10 @@ describe("User login 2FA", () => {
 
         const jwt = loginRequestSender.getJwt(response);
         const payload = jsonwebtoken.verify(jwt, jwtSecret);
-        expect(payload).to.include.all.keys("userId", "otp");
+        expect(payload).to.include.all.keys("userId", "otpId");
         const userId = (payload as {userId: number}).userId;
         expect(userId).to.be.greaterThan(0);
-        expect((payload as {otp: string}).otp).to.be.not.empty;
+        expect((payload as {otpId: number}).otpId).to.be.greaterThan(0);
 
         const otp = otpSender.getOtp();
 
@@ -151,7 +124,7 @@ describe("User login 2FA", () => {
         const jwt2Fa = (twoFactorAuthResponse.body as {jwt: string}).jwt;
         const payload2Fa = jsonwebtoken.verify(jwt2Fa, jwtSecret);
         expect(payload2Fa).to.include.all.keys("userId");
-        expect(payload2Fa).to.not.include.all.keys("otp");
+        expect(payload2Fa).to.not.include.all.keys("otpId");
         expect((payload2Fa as {userId: number}).userId).to.be.equal(userId);
     });
 
@@ -188,7 +161,7 @@ describe("User login 2FA", () => {
         const response = await loginRequestSender.sendRequest();
         const jwt = loginRequestSender.getJwt(response);
 
-        await tester.toBeErrorred([jwt, {}], StatusCodes.BAD_REQUEST);
+        await tester.toBeErrorred([[jwt, {}]], StatusCodes.BAD_REQUEST);
     });
     it("Additional fields", async () => {
         const response = await loginRequestSender.sendRequest();
@@ -230,6 +203,15 @@ describe("User login 2FA", () => {
             .auth(jwt, {type: "bearer"})
             .send({otp});
         expect(twoFactorAuthResponse).to.have.status(StatusCodes.OK);
+
+        await tester.toBeErrorred([[jwt, {otp}]], StatusCodes.FORBIDDEN);
+    });
+    it("Expired OTP", async () => {
+        const response = await loginRequestSender.sendRequest();
+        const jwt = loginRequestSender.getJwt(response);
+        const otp = otpSender.getOtp();
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         await tester.toBeErrorred([[jwt, {otp}]], StatusCodes.FORBIDDEN);
     });

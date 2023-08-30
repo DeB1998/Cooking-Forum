@@ -27,12 +27,12 @@ Authorization: Basic test@test.com Test1234_
 GET http://127.0.0.1:5000/jwt
 
 ### Basic authorization.
-GET http://127.0.0.1:5000/jwt/2fa
+GET http://127.0.0.1:5000/2fa/jwt
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
 
 {
-    "otp": "959588"
+    "otp": "035275"
 }
 
 ### Basic authorization.

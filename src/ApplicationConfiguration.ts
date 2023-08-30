@@ -9,5 +9,7 @@ export interface ApplicationConfiguration {
     databasePassword: string | undefined;
     passwordSaltRounds: number;
     jwtSecret: string;
+    sessionDuration: number;
     otpSender: OtpSender;
+    otpDuration: number;
 }

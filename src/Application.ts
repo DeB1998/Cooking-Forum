@@ -17,6 +17,7 @@ import {OtpManager} from "./authentication/otp/OtpManager";
 import {ErrorController} from "./controller/ErrorController";
 import {LoginController} from "./controller/LoginController";
 import {UserController} from "./controller/UserController";
+import {OtpRepository} from "./repository/OtpRepository";
 import {UserRepository} from "./repository/UserRepository";
 import {DatabaseConnection} from "./utils/DatabaseConnection";
 import {InvalidEndpointError} from "./utils/InvalidEndpointError";
@@ -37,11 +38,12 @@ export class Application {
             configuration.databasePassword
         );
         const passwordManager = new PasswordManager(configuration.passwordSaltRounds);
-        const jwtManager = new JwtManager(configuration.jwtSecret);
+        const jwtManager = new JwtManager(configuration.jwtSecret, configuration.sessionDuration);
         const otpManager = new OtpManager(passwordManager, configuration.otpSender);
+        const otpRepository = new OtpRepository(databaseConnection);
         const userRepository = new UserRepository(databaseConnection, passwordManager);
         const userController = new UserController(userRepository);
-        const loginController = new LoginController(jwtManager, otpManager);
+        const loginController = new LoginController(jwtManager, otpManager, otpRepository, configuration.otpDuration);
         const errorController = new ErrorController();
         const basicAuthentication = new BasicAuthentication(userRepository);
 

@@ -10,6 +10,8 @@ import {expect} from "chai";
 import {ObjectCopy} from "./utils/ObjectCopy";
 import {RandomValues} from "./utils/RandomValues";
 import {Tester} from "./utils/Tester";
+import {TestOtpSender} from "./utils/TestOtpSender";
+import {TestRequester} from "./utils/TestRequester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
@@ -21,6 +23,7 @@ describe("User registration", () => {
     if (result.error !== undefined) {
         throw result.error;
     }
+    const requester = TestRequester.createRequester(new TestOtpSender());
     const databaseConnection = new DatabaseConnection(
         process.env["DATABASE_HOST"] || "127.0.0.1",
         parseInt(process.env["DATABASE_PORT"] || "5432"),
@@ -30,7 +33,7 @@ describe("User registration", () => {
     );
     const databaseCleaner = new DatabaseCleaner(databaseConnection);
     let user: NewUser & Record<"password", string>;
-    const tester = new Tester((value: NewUser) => chai.request(HOST).post("/users").send(value));
+    const tester = new Tester((value: NewUser) => requester.post("/users").send(value));
 
     beforeEach(() => {
         user = {
@@ -45,14 +48,14 @@ describe("User registration", () => {
 
     it("Create a new user", async () => {
         user.twoFactorAuthentication = false;
-        const response = await chai.request(HOST).post("/users").send(user);
+        const response = await requester.post("/users").send(user);
         expect(response).to.have.status(StatusCodes.OK);
         expect(response).to.be.json;
         expect(response.body).to.be.deep.equal({error: false, created: true});
     });
     it("Create a new user with 2FA", async () => {
         user.twoFactorAuthentication = false;
-        const response = await chai.request(HOST).post("/users").send(user);
+        const response = await requester.post("/users").send(user);
         expect(response).to.have.status(StatusCodes.OK);
         expect(response).to.be.json;
         expect(response.body).to.be.deep.equal({error: false, created: true});
@@ -65,7 +68,7 @@ describe("User registration", () => {
             const newUser = ObjectCopy.copyObject(user);
             user.email = `test${index}@test.com`;
             user.password = password;
-            const response = await chai.request(HOST).post("/users").send(newUser);
+            const response = await requester.post("/users").send(newUser);
             expect(response).to.have.status(StatusCodes.OK);
             expect(response).to.be.json;
             expect(response.body).to.be.deep.equal({error: false, created: true});
@@ -73,7 +76,7 @@ describe("User registration", () => {
         }
     });
     it("Already registered user", async () => {
-        const response = await chai.request(HOST).post("/users").send(user);
+        const response = await requester.post("/users").send(user);
         expect(response).to.have.status(StatusCodes.OK);
         expect(response).to.be.json;
         expect(response.body).to.be.deep.equal({error: false, created: true});

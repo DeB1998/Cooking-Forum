@@ -3,11 +3,12 @@ import chaiHttp from "chai-http";
 import dotenv from "dotenv";
 import {StatusCodes} from "http-status-codes";
 import jsonwebtoken from "jsonwebtoken";
-import {Test} from "mocha";
 import process from "node:process";
 import {NewUser} from "../src/entity/User";
 import {DatabaseConnection} from "../src/utils/DatabaseConnection";
 import {DatabaseCleaner} from "./utils/DatabaseCleaner";
+import {TestOtpSender} from "./utils/TestOtpSender";
+import {TestRequester} from "./utils/TestRequester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
@@ -21,6 +22,7 @@ describe("User login", () => {
     if (result.error !== undefined) {
         throw result.error;
     }
+    const requester = TestRequester.createRequester(new TestOtpSender());
     const databaseConnection = new DatabaseConnection(
         process.env["DATABASE_HOST"] || "127.0.0.1",
         parseInt(process.env["DATABASE_PORT"] || "5432"),
@@ -40,12 +42,13 @@ describe("User login", () => {
             password: "Test123_",
             twoFactorAuthentication: false
         };
-        return chai.request(HOST).post("/users").send(user);
+        return requester.post("/users").send(user);
     });
 
+    after(() => requester.close());
+
     it("User login", async () => {
-        const response = await chai
-            .request(HOST)
+        const response = await requester
             .get("/jwt")
             .auth(user.email, user.password, {type: "basic"})
             .send();
