@@ -3,6 +3,45 @@
 This repository contains the back-end part of a web application that allows the user to register and
 log into a web application managing a forum on cooking.
 
+<!-- TOC -->
+
+* [Cooking forum](#cooking-forum)
+    * [Build the application](#build-the-application)
+        * [Prerequisites](#prerequisites)
+        * [How to build](#how-to-build)
+        * [Docker and Podman](#docker-and-podman)
+    * [Run the application](#run-the-application)
+        * [Environment variables](#environment-variables)
+            * [`DEBUG`](#debug)
+            * [`SERVER_PORT`](#serverport)
+            * [`DATABASE_HOST`](#databasehost)
+            * [`DATABASE_PORT`](#databaseport)
+            * [`DATABASE_USER`](#databaseuser)
+            * [`DATABASE_PASSWORD`](#databasepassword)
+            * [`DATABASE_NAME`](#databasename)
+            * [`PASSWORD_SALT_ROUNDS`](#passwordsaltrounds)
+            * [`JWT_SECRET`](#jwtsecret)
+            * [`SESSION_DURATION`](#sessionduration)
+            * [`OTP_DURATION`](#otpduration)
+    * [Endpoints](#endpoints)
+        * [`/users`](#users)
+            * [Request](#request)
+            * [Response](#response)
+                * [Success](#success)
+                * [Error](#error)
+        * [`/jwt`](#jwt)
+            * [Request](#request-1)
+            * [Response](#response-1)
+                * [Success](#success-1)
+            * [Error](#error-1)
+        * [`/2fa/jwt`](#2fajwt)
+            * [Request](#request-2)
+            * [Response](#response-2)
+                * [Success](#success-2)
+                * [Error](#error-2)
+
+<!-- TOC -->
+
 ## Build the application
 
 The back-end can be run on any Node.js environment.
@@ -11,8 +50,8 @@ The back-end can be run on any Node.js environment.
 
 To build the application, we assume:
 
-- A working Node.js enviroment;
-- A working PostgreSQL database
+- A working Node.js environment;
+- A working PostgreSQL database.
 
 ### How to build
 
@@ -25,12 +64,20 @@ To correctly build the application, follow these steps:
    repository;
 4. Prepare the database by:
     1. Creating a new database, e.g., `cooking-forum`;
-    2. Creating a new user, e.g., `cooking-forum`,;
+    2. Creating a new user, e.g., `cooking-forum`;
     3. Run the SQL code you can find in the `init-database.sql` file, taking care of replacing, in
        the last four lines, the strings `cooking-forum` with the name of the user you have created
        in the previous step.
 
-Now, you can run the application, as explained in the following section.
+Now, you can run the application, as explained in [Run the application](#run-the-application).
+
+### Docker and Podman
+
+In the `docker` directory you can find a `Dockerfile` that can be used to create a minimal container
+running the HTTP server with all the required dependencies.
+
+In the same directory, you can find a `docker-compose.yaml` file that can be used to manage the
+container created from the `Dockerfile` together with a PostgreSQL database.
 
 ## Run the application
 
@@ -47,7 +94,7 @@ By default, the application will load the configuration from the `.env` file you
 directory where you cloned or extracted this repository.
 
 Any of these configurations can be changed by either modifying the `.env` file or by specifying them
-as enviroment variables before executing the `node` command.
+as environment variables before executing the `node` command.
 For instance, if you want to set to `9000` the HTTP server port and set to `my-database` the name of
 the database the application will connect to, you can execute:
 
@@ -98,7 +145,7 @@ Name of the database the application will operate on. This variable is mandatory
 #### `PASSWORD_SALT_ROUNDS`
 
 Number of iterations performed by the algorithm that generates the passwords of the users and the
-OTPs. The higher the value, the stronger the salt at cost of more computations. This variable is
+OTPs. The higher the value, the stronger the salt at the cost of more computations. This variable is
 mandatory.
 
 #### `JWT_SECRET`
@@ -111,7 +158,7 @@ mandatory.
 Number of seconds after which a JWT session token will expire. This variable is
 mandatory.
 
-#### OTP_DURATION
+#### `OTP_DURATION`
 
 Number of seconds after which a JWT session token will expire. This variable is
 mandatory.
@@ -261,9 +308,10 @@ where `message` is a string explaining the reason of the error.
 
 ### `/2fa/jwt`
 
-This endpoint must be called after the `/jwt` one has benn called.
+This endpoint must be called after the `/jwt` one has been called.
 
-In case the user enabled the two-factor authentication, the generated OTP is printed
+In case the user has enabled the two-factor authentication, the generated OTP is printed on standard
+output of the server process.
 
 #### Request
 
@@ -285,10 +333,8 @@ specifying `Bearer` as authentication type.
 
 ##### Success
 
-In case the provided OTP matches the generated one, the server will generate and HTTP response with
+In case the provided OTP matches the generated one, the server will generate an HTTP response with
 status 200 and containing the following JSON object in its body:
-In case the provided e-mail and password are correct, the server sends an HTTP response with status
-200, and the following JSON object in its body:
 
 ```json
 {
