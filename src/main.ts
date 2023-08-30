@@ -78,7 +78,10 @@ function onListening() {
     logger.info(`Server started on port ${bind}`);
 }
 
-dotenv.config();
+const result = dotenv.config();
+if (result.error !== undefined) {
+    throw result.error;
+}
 
 // Create the dependencies
 const databaseConnection = new DatabaseConnection(

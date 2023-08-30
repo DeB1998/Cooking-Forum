@@ -4,6 +4,7 @@ import {ValidationError} from "jsonschema";
 import {AuthenticationError} from "../authentication/AuthenticationError";
 import {InvalidEndpointError} from "../utils/InvalidEndpointError";
 import {Logger} from "../utils/Logger";
+import {InvalidRequestError} from "./InvalidRequestError";
 import {ErrorResponse} from "./response/ErrorResponse";
 
 export class ErrorController {
@@ -21,7 +22,7 @@ export class ErrorController {
                 response.status(StatusCodes.FORBIDDEN);
             } else if (error instanceof InvalidEndpointError) {
                 response.status(StatusCodes.NOT_FOUND);
-            } else if (error instanceof ValidationError) {
+            } else if (error instanceof ValidationError || error instanceof InvalidRequestError) {
                 response.status(StatusCodes.BAD_REQUEST);
             } else {
                 response.status(StatusCodes.INTERNAL_SERVER_ERROR);

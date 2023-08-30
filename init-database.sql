@@ -8,5 +8,5 @@ CREATE TABLE public.users
     "password"                CHAR(60)     NOT NULL,
     two_factor_authentication BOOL         NOT NULL
 );
-GRANT INSERT, UPDATE, DELETE, SELECT ON public.users TO cooking_forum;
+GRANT INSERT, UPDATE, DELETE, SELECT, TRUNCATE ON public.users TO cooking_forum;
 GRANT UPDATE, SELECT, USAGE ON SEQUENCE public.users_id_seq TO cooking_forum;
