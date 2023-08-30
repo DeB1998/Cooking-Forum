@@ -17,8 +17,6 @@ import {TestRequester} from "./utils/TestRequester";
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
-const HOST = "http://127.0.0.1:5000";
-
 type TestUser = NewUser & Record<"password", string>;
 
 class LoginRequestSender {
@@ -37,13 +35,11 @@ class LoginRequestSender {
     }
 
     public async sendRequest() {
-        const response = await this.requester
+        return this.requester
             .get("/jwt")
             .auth(this.user.email, this.user.password, {type: "basic"})
             .redirects(0)
             .send();
-
-        return response;
     }
 }
 

@@ -13,8 +13,6 @@ import {TestRequester} from "./utils/TestRequester";
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
-const HOST = "http://127.0.0.1:5000";
-
 type TestUser = NewUser & Record<"password", string>;
 
 describe("User login", () => {

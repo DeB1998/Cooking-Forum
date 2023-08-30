@@ -36,7 +36,7 @@ const result = dotenv.config();
 if (result.error !== undefined) {
     throw result.error;
 }
-const serverPort = process.env["PORT"];
+const serverPort = process.env["SERVER_PORT"];
 const databasePortToParse = process.env["DATABASE_PORT"];
 const databaseName = process.env["DATABASE_NAME"];
 const passwordSaltRoundsToParse = process.env["PASSWORD_SALT_ROUNDS"];
@@ -51,14 +51,19 @@ if (databaseName === undefined || databaseName.length === 0) {
     logger.error("The database name must be provided as a non-empty environment variable");
     process.exit(1);
 }
-const databasePort = parseAsInt(
-    databasePortToParse,
-    "The database port must be provided as a non-empty environment variable",
-    "The database port is not a valid number"
-);
-if (databasePort <= 0 || databasePort >= 65_535) {
-    logger.error("The database port is not a valid port number");
-    process.exit(1);
+let databasePort;
+if (databasePortToParse !== undefined) {
+    databasePort = parseAsInt(
+        databasePortToParse,
+        "The database port must be provided as a non-empty environment variable",
+        "The database port is not a valid number"
+    );
+    if (databasePort <= 0 || databasePort >= 65_535) {
+        logger.error("The database port is not a valid port number");
+        process.exit(1);
+    }
+} else {
+    databasePort = undefined;
 }
 const passwordSaltRounds = parseAsInt(
     passwordSaltRoundsToParse,

@@ -16,8 +16,6 @@ import {TestRequester} from "./utils/TestRequester";
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
-const HOST = "http://127.0.0.1:5000";
-
 describe("User registration", () => {
     const result = dotenv.config();
     if (result.error !== undefined) {
@@ -45,6 +43,8 @@ describe("User registration", () => {
         };
         return databaseCleaner.cleanDatabase();
     });
+
+    after(() => requester.close());
 
     it("Create a new user", async () => {
         user.twoFactorAuthentication = false;
@@ -95,7 +95,10 @@ describe("User registration", () => {
         values.set("surname", names);
         values.set(
             "email",
-            Array.from(["aaaa#aaa.com", "eee@a", "123@", ".."]).concat(names, RandomValues.STRING_VALUES)
+            Array.from(["aaaa#aaa.com", "eee@a", "123@", ".."]).concat(
+                names,
+                RandomValues.STRING_VALUES
+            )
         );
         values.set("password", Array.from(names).concat(RandomValues.STRING_VALUES));
         values.set(

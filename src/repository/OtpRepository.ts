@@ -13,16 +13,15 @@ export class OtpRepository {
 
         try {
             // Insert the otp
-            const query = `INSERT INTO otp(otp, user_id)
-                           VALUES ($1, $2)
-                           RETURNING id, otp, user_id AS userId, date`;
-            const result = await client.query(query, [otp.otp, otp.userId]);
+            const query = `INSERT INTO otp(otp)
+                           VALUES ($1)
+                           RETURNING id, otp, date`;
+            const result = await client.query(query, [otp.otp]);
             if (result.rowCount === 1) {
                 const row = result.rows[0];
                 return {
                     id: row.id,
                     otp: row.otp,
-                    userId: row.userId,
                     date: row.date
                 };
             }
@@ -55,7 +54,6 @@ export class OtpRepository {
             // Select the user
             const query = `SELECT id,
                                   otp,
-                                  user_id AS userId,
                                   date
                            FROM otp
                            WHERE id = $1
@@ -67,7 +65,6 @@ export class OtpRepository {
                 return {
                     id: row.id,
                     otp: row.otp,
-                    userId: row.userId,
                     date: row.date
                 };
             }

@@ -50,7 +50,7 @@ export class LoginController {
         const sessionData: JwtSessionData = {userId: user.id};
         if (requiresTwoFactorAuthentication) {
             const otp = await this.otpManager.generateOtp();
-            const insertedOtp = await this.otpRepository.insertOtp({otp, userId: user.id});
+            const insertedOtp = await this.otpRepository.insertOtp({otp});
             if (insertedOtp === null) {
                 next(new AuthenticationError("Unable to generate the OTP"));
             } else {

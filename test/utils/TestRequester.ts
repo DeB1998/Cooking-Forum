@@ -12,7 +12,7 @@ export class TestRequester {
         }
         const jwtSecret = process.env["JWT_SECRET"] || "";
         const application = new Application({
-            serverPort: "5000",
+            serverPort: process.env["SERVER_PORT"] || "5000",
             databaseHost: process.env["DATABASE_HOST"] || "127.0.0.1",
             databasePort: parseInt(process.env["DATABASE_PORT"] || "5432"),
             databaseName: process.env["DATABASE_NAME"] || "",

@@ -5,7 +5,7 @@ COPY ./src /srv/app/src
 COPY  ./.env ./package.json ./tsconfig.base.json ./tsconfig.app.json /srv/app
 WORKDIR /srv/app
 RUN npm install &&  \
-    npm run compile-sources --omit=dev && \
+    npm run compile-sources && \
     npm prune --production && \
     rm -fR src && \
     rm -fR tsconfig* && \

@@ -13,8 +13,6 @@ import {TestRequester} from "./utils/TestRequester";
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
-const HOST = "http://127.0.0.1:5000";
-
 type TestUser = NewUser & Record<"password", string>;
 
 async function testWrongCredentials(tester: Tester<[string, string]>, user: TestUser) {
@@ -81,6 +79,8 @@ describe("User login error", () => {
             requester.post("/users").send(user2fa)
         ]);
     });
+
+    after(() => requester.close());
 
     it("Wrong credentials", async () => {
         await testWrongCredentials(tester, user);

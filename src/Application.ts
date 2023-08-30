@@ -183,6 +183,6 @@ export class Application {
                 ? `pipe ${address}`
                 : `port ${address.port}`;
 
-        Application.LOGGER.info(`Server started on port ${bind}`);
+        Application.LOGGER.info(`Server started on ${bind}`);
     }
 }

@@ -65,7 +65,7 @@ export class UserController {
         } else if (!userToAdd.password.match(UserController.PASSWORD_REGEX)) {
             next(
                 new InvalidRequestError(
-                    "The password must be from 8 to 32 characters-long, and it must contain at least one uppercase letter, one lowercase letter, one digit and one special characters among '@$!%*?&'"
+                    "The password must be from 8 to 32 characters-long, and it must contain at least one uppercase letter, one lowercase letter, one digit and one of the symbols '@$!%*?&'"
                 )
             );
         } else {

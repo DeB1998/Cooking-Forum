@@ -1,5 +1,4 @@
 export interface NewOtp {
-    userId: number;
     otp: string;
 }
 
