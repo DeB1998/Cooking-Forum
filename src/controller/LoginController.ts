@@ -1,6 +1,7 @@
 import {NextFunction, Request, Response} from "express-serve-static-core";
 import {StatusCodes} from "http-status-codes";
 import {Schema, Validator} from "jsonschema";
+import passport from "passport";
 import {AuthenticationError} from "../authentication/AuthenticationError";
 import {JwtManager} from "../authentication/jwt/JwtManager";
 import {JwtSessionData} from "../authentication/jwt/JwtSessionData";
@@ -17,6 +18,19 @@ export class LoginController {
     constructor(jwtManager: JwtManager, otpManager: OtpManager) {
         this.jwtManager = jwtManager;
         this.otpManager = otpManager;
+    }
+
+    public async authenticate(request: Request, response: Response, next: NextFunction) {
+        passport.authenticate("basic", {session: false}, (err: Error, user: User | boolean) => {
+            if (err) {
+                next(err);
+            } else if (user === false) {
+                next(new AuthenticationError("Missing credentials"));
+            } else {
+                request.user = user;
+                next();
+            }
+        })(request, response, next);
     }
 
     public async createJwt(request: Request, response: Response, next: NextFunction) {

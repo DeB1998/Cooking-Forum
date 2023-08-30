@@ -3,7 +3,7 @@
 import dotenv from "dotenv";
 import express from "express";
 import {expressjwt} from "express-jwt";
-import {ErrorRequestHandler} from "express-serve-static-core";
+import {ErrorRequestHandler, NextFunction, Request, Response} from "express-serve-static-core";
 import http from "http";
 import process from "node:process";
 import passport from "passport";
@@ -129,8 +129,12 @@ const jwtExtractorMiddleware = expressjwt({
 });
 const loginRouter = express.Router();
 loginRouter
-    .get("/", passport.authenticate("basic", {session: false}), (request, response, next) =>
-        loginController.createJwt(request, response, next)
+    .get(
+        "/",
+        (request: Request, response: Response, next: NextFunction) =>
+            loginController.authenticate(request, response, next),
+        (request: Request, response: Response, next: NextFunction) =>
+            loginController.createJwt(request, response, next)
     )
     .get(
         "/2fa",

@@ -24,6 +24,9 @@ GET http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test1234_
 
 ### Basic authorization.
+GET http://127.0.0.1:5000/jwt
+
+### Basic authorization.
 GET http://127.0.0.1:5000/jwt/2fa
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
