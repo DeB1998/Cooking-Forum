@@ -6,7 +6,13 @@ export class DatabaseConnection {
 
     private pool: Pool;
 
-    constructor(host: string, port: number, database: string, user: string, password: string) {
+    constructor(
+        host: string | undefined,
+        port: number | undefined,
+        database: string,
+        user: string | undefined,
+        password: string | undefined
+    ) {
         this.pool = new Pool({
             host,
             port,
@@ -15,14 +21,7 @@ export class DatabaseConnection {
             password
         });
         DatabaseConnection.LOGGER.debug(
-            "Created the connection pool to",
-            host,
-            ":",
-            port,
-            " on database ",
-            database,
-            "with user",
-            user
+            `Created the connection pool to ${host}:${port} on database ${database} with user ${user}`
         );
     }
 

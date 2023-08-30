@@ -32,7 +32,7 @@ export class ErrorController {
             response.status(StatusCodes.INTERNAL_SERVER_ERROR);
             errorResponse.message = "An error occurred while serving the request";
         }
-        ErrorController.LOGGER.error(error);
+        ErrorController.LOGGER.debug(error);
 
         response.send(errorResponse);
     }

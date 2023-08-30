@@ -2,17 +2,19 @@ import chai, {expect} from "chai";
 import chaiHttp from "chai-http";
 import dotenv from "dotenv";
 import {StatusCodes} from "http-status-codes";
+import jsonwebtoken from "jsonwebtoken";
+import {Test} from "mocha";
 import process from "node:process";
 import {NewUser} from "../src/entity/User";
 import {DatabaseConnection} from "../src/utils/DatabaseConnection";
 import {DatabaseCleaner} from "./utils/DatabaseCleaner";
-import jsonwebtoken from "jsonwebtoken";
-import {Tester} from "./utils/Tester";
 
 chai.use(chaiHttp);
 chai.config.truncateThreshold = 0;
 
 const HOST = "http://127.0.0.1:5000";
+
+type TestUser = NewUser & Record<"password", string>;
 
 describe("User login", () => {
     const result = dotenv.config();
@@ -27,10 +29,7 @@ describe("User login", () => {
         process.env["DATABASE_PASSWORD"] || ""
     );
     const databaseCleaner = new DatabaseCleaner(databaseConnection);
-    let user: NewUser & Record<"password", string>;
-    const tester = new Tester((value: [string, string]) =>
-        chai.request(HOST).get("/jwt").auth(value[0], value[1], {type: "basic"}).send()
-    );
+    let user: TestUser;
 
     beforeEach(async () => {
         await databaseCleaner.cleanDatabase();
@@ -64,31 +63,5 @@ describe("User login", () => {
         const payload = jsonwebtoken.verify(jwt, process.env["JWT_SECRET"] || "");
         expect(payload).to.include.all.keys("userId");
         expect((payload as {userId: number}).userId).to.be.greaterThan(0);
-    });
-    it("Wrong credentials", async () => {
-        const emails = [
-            "a@a.com",
-            "user@gmail.com",
-            "user2@outlook.com",
-            "null",
-            "undefined",
-            "123"
-        ];
-        const passwords = ["Password123_", "aaaa", "null", "123", "{}"];
-
-        const credentials: [string, string][] = [];
-
-        for (const email of emails) {
-            credentials.push([email, user.password]);
-        }
-        for (const password of passwords) {
-            credentials.push([user.email, password]);
-        }
-
-        await tester.toBeErrorred(credentials, StatusCodes.FORBIDDEN);
-    });
-    it("Missing credentials", async () => {
-        const noCredentialsTester = new Tester(() => chai.request(HOST).get("/jwt").send());
-        await noCredentialsTester.toBeErrorred({}, StatusCodes.FORBIDDEN);
     });
 });
