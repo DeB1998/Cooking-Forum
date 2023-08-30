@@ -1,6 +1,13 @@
 version: "3.5"
 
 services:
+    cooking-forum-app:
+        build:
+            context: ../
+            dockerfile: ./docker/Dockerfile
+        container_name: "cooking-forum-app"
+        ports:
+            - "5000:5000"
     cooking-forum-postgres:
         container_name: "cooking-forum-postgres"
         image: "postgres:alpine"

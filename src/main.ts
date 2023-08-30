@@ -111,9 +111,15 @@ const applicationConfiguration: ApplicationConfiguration = {
 const application = new Application(applicationConfiguration);
 application.listen();
 
-if (process.env["DEBUG"] === "true") {
-    process.once("SIGUSR2", () => {
-        logger.info("Requested server to shut down");
-        application.close();
-    });
-}
+process.once("SIGUSR2", () => {
+    logger.info("Requested server to shut down");
+    application.close();
+});
+process.once("SIGQUIT", () => {
+    logger.info("Requested server to shut down");
+    application.close();
+});
+process.once("SIGTERM", () => {
+    logger.info("Requested server to shut down");
+    application.close();
+});
