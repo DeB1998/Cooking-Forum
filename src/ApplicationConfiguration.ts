@@ -10,6 +10,7 @@ export interface ApplicationConfiguration {
     passwordSaltRounds: number;
     jwtSecret: string;
     sessionDuration: number;
+    jwtIssuer: string | undefined;
     otpSender: OtpSender;
     otpDuration: number;
 }

@@ -21,6 +21,7 @@ export class TestRequester {
             passwordSaltRounds: 10,
             jwtSecret,
             sessionDuration: parseInt(process.env["SESSION_DURATION"] || "100"),
+            jwtIssuer: process.env["JWT_ISSUER"],
             otpSender,
             otpDuration: 1
         });

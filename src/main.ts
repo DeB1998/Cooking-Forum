@@ -108,6 +108,7 @@ const applicationConfiguration: ApplicationConfiguration = {
     passwordSaltRounds,
     jwtSecret,
     sessionDuration,
+    jwtIssuer: process.env["JWT_ISSUER"],
     otpSender: new ConsoleOtpSender(),
     otpDuration
 };

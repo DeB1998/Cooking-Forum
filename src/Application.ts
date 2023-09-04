@@ -38,12 +38,21 @@ export class Application {
             configuration.databasePassword
         );
         const passwordManager = new PasswordManager(configuration.passwordSaltRounds);
-        const jwtManager = new JwtManager(configuration.jwtSecret, configuration.sessionDuration);
+        const jwtManager = new JwtManager(
+            configuration.jwtSecret,
+            configuration.sessionDuration,
+            configuration.jwtIssuer
+        );
         const otpManager = new OtpManager(passwordManager, configuration.otpSender);
         const otpRepository = new OtpRepository(databaseConnection);
         const userRepository = new UserRepository(databaseConnection, passwordManager);
         const userController = new UserController(userRepository);
-        const loginController = new LoginController(jwtManager, otpManager, otpRepository, configuration.otpDuration);
+        const loginController = new LoginController(
+            jwtManager,
+            otpManager,
+            otpRepository,
+            configuration.otpDuration
+        );
         const errorController = new ErrorController();
         const basicAuthentication = new BasicAuthentication(userRepository);
 
@@ -65,7 +74,7 @@ export class Application {
         const jwtExtractorMiddleware = expressjwt({
             secret: configuration.jwtSecret,
             algorithms: ["HS256"],
-            issuer: JwtManager.JWT_ISSUER
+            issuer: configuration.jwtIssuer
         });
         const loginRouter = express.Router();
         loginRouter.get(

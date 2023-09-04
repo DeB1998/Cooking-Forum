@@ -44,7 +44,7 @@ export class UserRepository {
         }
     }
 
-    public async logIn(email: string, password: string): Promise<User | null> {
+    public async authenticateUser(email: string, password: string): Promise<User | null> {
         const client = await this.databaseConnection.getClient();
 
         try {
