@@ -22,8 +22,8 @@ import {UserRepository} from "../../repository/UserRepository";
 import {AuthenticationError} from "../AuthenticationError";
 
 /**
- * Class performing the user authentication when the credentials are specified using the HTTP basic
- * authentication scheme.
+ * Class performing the authentication of the user when the credentials are specified using the
+ * HTTP basic authentication scheme.
  */
 export class BasicAuthentication {
     /**
@@ -49,7 +49,7 @@ export class BasicAuthentication {
      *  - `error === null` and `user !== undefined` if the user is successfully authenticated. In
      *     this case,
      *     `user` will contain the user's information;
-     *  - `error !== null` if the user in not authenticated. In this case, `error` will be the
+     *  - `error !== null` if the user is not authenticated. In this case, `error` will be the
      *     cause of the authentication error (typically, an exception), while the value of `user`
      *     is unspecified.
      */
@@ -63,7 +63,7 @@ export class BasicAuthentication {
             done(new AuthenticationError("Invalid username or password"));
         }
 
-        // Access the database to retrieve the user information
+        // Access the database to retrieve the user's information
         this.userRepository
             .authenticateUser(email, password)
             .then((user) => BasicAuthentication.onUserAuthenticated(user, done))
@@ -84,10 +84,10 @@ export class BasicAuthentication {
     }
 
     /**
-     * Utility method that will be called if the user successfully authenticates.
+     * Utility method that will be called if the user is successfully authenticated.
      *
-     * @param user User information.
-     * @param done Callback that will be invoked with the user information.
+     * @param user User's information.
+     * @param done Callback that will be invoked with the user's information.
      */
     private static onUserAuthenticated(
         user: User | null,

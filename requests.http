@@ -1,4 +1,4 @@
-### Send POST request with json body
+### Create a new user
 POST http://127.0.0.1:5000/users
 Content-Type: application/json
 
@@ -10,8 +10,14 @@ Content-Type: application/json
     "twoFactorAuthentication": true
 }
 
+### Crea a new user with a malformed JSON object
+POST http://127.0.0.1:5000/users
+Content-Type: application/json
 
-### Basic authorization.
+asasas
+
+
+### Perform login
 GET http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test123_
 
@@ -19,14 +25,14 @@ Authorization: Basic test@test.com Test123_
     client.global.set("jwt", response.body.jwt);
 %}
 
-### Basic authorization.
+### Perform login with incorrect credentials
 GET http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test1234_
 
-### Basic authorization.
+### Perform login with no credentials
 GET http://127.0.0.1:5000/jwt
 
-### Basic authorization.
+### Perform the second step of the two-factor authentication
 GET http://127.0.0.1:5000/2fa/jwt
 Authorization: Bearer {{jwt}}
 Content-Type: application/json
@@ -35,16 +41,16 @@ Content-Type: application/json
     "otp": "035275"
 }
 
-### Basic authorization.
+### Non-existent endpoint
 GET http://127.0.0.1:5000/non-existent
 
-### Basic authorization.
+### Another non-existent endpoint
 POST http://127.0.0.1:5000/not-found
 Authorization: Basic test@test.com Test1234_
 
 {}
 
-### Basic authorization.
+### Non-existent endpoint with correct URL but wrong HTTP method
 POST http://127.0.0.1:5000/jwt
 Authorization: Basic test@test.com Test1234_
 

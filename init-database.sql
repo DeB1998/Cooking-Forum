@@ -13,7 +13,7 @@ CREATE TABLE public.otp
 (
     id   SERIAL PRIMARY KEY,
     otp  CHAR(60)  NOT NULL,
-    date TIMESTAMP NOT NULL DEFAULT NOW()
+    creation_date TIMESTAMP NOT NULL DEFAULT NOW()
 );
 GRANT INSERT, UPDATE, DELETE, SELECT, TRUNCATE ON public.users TO cooking_forum;
 GRANT UPDATE, SELECT, USAGE ON SEQUENCE public.users_id_seq TO cooking_forum;

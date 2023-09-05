@@ -18,15 +18,14 @@
  **************************************************************************************************/
 
 /**
- * Exception thrown if a user, which is trying to authenticate, does not provide the correct
+ * Error generated if a user, which is trying to authenticate, does not provide the correct
  * credentials, or if an error occurs while authenticating the user.
  */
-
 export class AuthenticationError extends Error {
     /**
      * Creates a new error generated if the user cannot be authenticated.
      *
-     * @param message Message of the error.
+     * @param message Message describing the error.
      */
     constructor(message: string) {
         // Set the message

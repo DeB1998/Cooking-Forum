@@ -18,8 +18,8 @@
  **************************************************************************************************/
 
 /**
- * Interface describing the data in the user session. Objects conforming to this interface can be
- * placed in the JWT that holds the user session information.
+ * Interface describing the data in the user's session. Objects conforming to this interface can be
+ * placed in the JWT that holds the user's session information.
  */
 export interface JwtSessionData {
     /**

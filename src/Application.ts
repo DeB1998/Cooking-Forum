@@ -1,3 +1,22 @@
+/***************************************************************************************************
+ *
+ * This file is part of the Cooking Forum web application created by Alessio De Biasi.
+ *
+ * The Cooking Forum web application is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the Free Software Foundation,
+ * either version 3 of the License, or (at your option) any later version.
+ *
+ * The Cooking Forum web application is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with the Cooking Forum
+ * web application. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Copyright © Alessio De Biasi, 2023.
+ *
+ **************************************************************************************************/
+
 // noinspection FallThroughInSwitchStatementJS
 
 import express from "express";
@@ -23,11 +42,31 @@ import {DatabaseConnection} from "./utils/DatabaseConnection";
 import {InvalidEndpointError} from "./utils/InvalidEndpointError";
 import {Logger} from "./utils/Logger";
 
+/**
+ * Main class configuring and starting the HTTP server that runs the application.
+ */
 export class Application {
+    /**
+     * Logger that will be used to log messages the application generates.
+     */
     private static readonly LOGGER = Logger.createLogger();
-    private readonly httpServer: Server;
-    private port: any;
 
+    /**
+     * HTTP server that runs the application.
+     */
+    private readonly httpServer: Server;
+
+    /**
+     * Port on which the HTTP server will listen for incoming requests.
+     */
+    private readonly port: any;
+
+    /**
+     * Creates, but do not start, the application. Call {@link Application.listen} to start the
+     * HTTP server and listen for incoming requests.
+     *
+     * @param configuration Configuration of the application.
+     */
     constructor(configuration: ApplicationConfiguration) {
         // Create the dependencies
         const databaseConnection = new DatabaseConnection(
@@ -56,118 +95,154 @@ export class Application {
         const errorController = new ErrorController();
         const basicAuthentication = new BasicAuthentication(userRepository);
 
+        // Use passport to check the user's credentials
         passport.use(
             new BasicStrategy((email, password, done) =>
                 basicAuthentication.authenticate(email, password, done)
             )
         );
 
-        // Create the routes
+        // Create the routes to manage users
         const usersRouter = express.Router();
+        // Create the route to register a new user
         usersRouter.post(
             "/",
+            // Check the correctness of the JSON object in the request body
             (request, response, next) =>
                 userController.checkUserCreationRequest(request, response, next),
+            // Register the user
             (request, response, next) => userController.createUser(request, response, next)
         );
 
+        // Create the routes to manage the first step of the login process
+        const loginRouter = express.Router();
+        loginRouter.get(
+            "/",
+            // Authenticate the user checking the provided credentials
+            (request: Request, response: Response, next: NextFunction) =>
+                loginController.authenticate(request, response, next),
+            // Create the JWT holding the user's session
+            (request: Request, response: Response, next: NextFunction) =>
+                loginController.createJwt(request, response, next)
+        );
+        // Create the middleware that extracts and validates JWTs from the Authentication header
         const jwtExtractorMiddleware = expressjwt({
             secret: configuration.jwtSecret,
             algorithms: ["HS256"],
             issuer: configuration.jwtIssuer
         });
-        const loginRouter = express.Router();
-        loginRouter.get(
-            "/",
-            (request: Request, response: Response, next: NextFunction) =>
-                loginController.authenticate(request, response, next),
-            (request: Request, response: Response, next: NextFunction) =>
-                loginController.createJwt(request, response, next)
-        );
+        // Create the routes to manage the second step of the login process
         const twoFactorAuthRouter = express.Router();
         twoFactorAuthRouter.get(
             "/jwt",
+            // Extract the JWT holding the user's session
             jwtExtractorMiddleware,
+            // Check the correctness of the request body
             (request, response, next) =>
                 loginController.checkTwoFactorAuthRequest(request, response, next),
+            // Verify the correctness of the OTP
             (request, response, next) => loginController.verifyOtp(request, response, next)
         );
+        // Create the middleware that handles the errors
         const errorHandler: ErrorRequestHandler = (error, request, response, next) =>
             errorController.handleErrors(error, request, response, next);
 
-        // Configure express.js
+        // Configure Express adding the middlewares
         const app = express();
         app.use(express.json());
         app.use(express.urlencoded({extended: false}));
         app.use("/users", usersRouter);
         app.use("/jwt", loginRouter);
         app.use("/2fa", twoFactorAuthRouter);
-        app.use("*", (request, response, next) => {
+        // Add a default middleware that handles non-existent endpoints
+        app.use("*", (request, _, next) =>
             next(
                 new InvalidEndpointError(
                     `Invalid endpoint '${request.baseUrl}' with HTTP method '${request.method}'`
                 )
-            );
-        });
+            )
+        );
         app.use(errorHandler);
 
-        // Get the port
-        this.port = this.normalizePort(configuration.serverPort);
+        // Set the port
+        this.port = Application.normalizePort(configuration.serverPort);
         app.set("port", this.port);
 
         // Create the HTTP server
         Application.LOGGER.info(`Starting the server on port ${this.port}`);
         this.httpServer = http.createServer(app);
-        this.httpServer.on("error", (error) => this.onError(error, this.port));
-        this.httpServer.on("listening", () => this.onListening(this.httpServer.address()));
+        // Log the server events
+        this.httpServer.on("error", (error) => Application.onError(error, this.port));
+        this.httpServer.on("listening", () => Application.onListening(this.httpServer.address()));
         this.httpServer.on("close", () => {
             Application.LOGGER.info("Server correctly shut down");
             process.exit(0);
         });
     }
 
-    public getHttpServer() {
+    /**
+     * Returns the HTTP server.
+     *
+     * @returns The HTTP server.
+     */
+    public getHttpServer(): Server {
         return this.httpServer;
     }
 
-    public listen() {
+    /**
+     * Make the HTTP server listen for incoming requests. This qill effectively start teh
+     * application.
+     */
+    public listen(): void {
         // Listen on provided port, on all network interfaces
         this.httpServer.listen(this.port);
     }
 
-    public close() {
+    /**
+     * Stops the application by closing the HTTP server.
+     */
+    public close(): void {
         this.httpServer.close();
     }
 
     /**
-     * Normalize a port into a number, string, or false.
+     * Normalizes the port the HTTP server will listen on.
+     *
+     * @param value Value to normalize as a port.
+     * @returns The port normalized into a number or a string, or `false` if the specifed value is
+     *     not valid.
      */
-    private normalizePort(val: any) {
-        const port = parseInt(val, 10);
+    private static normalizePort(value: any): any {
+        const port = parseInt(value, 10);
 
         if (isNaN(port)) {
-            // named pipe
-            return val;
+            // Named pipe
+            return value;
         }
 
         if (port >= 0) {
-            // port number
+            // Port number
             return port;
         }
 
+        // Ivalid value
         return false;
     }
 
     /**
-     * Event listener for HTTP server "error" event.
+     * Event listener that manages error events generated by the HTTP server.
+     *
+     * @param error The error that occurred.
+     * @param port The port where the HTTP server is listening for incoming requests.
      */
-    private onError(error: Error, port: number | string) {
+    private static onError(error: Error, port: number | string): void {
         if (!("syscall" in error) || !("code" in error) || error.syscall !== "listen") {
+            // Log the error
             Application.LOGGER.error(error);
         } else {
             const bind = typeof port === "string" ? `Pipe ${port}` : `Port ${port}`;
 
-            // handle specific listen errors with friendly messages
+            // Handle specific listen errors with friendly messages
             switch (error.code) {
                 case "EACCES":
                     Application.LOGGER.error(`${bind} requires elevated privileges`);
@@ -180,13 +255,17 @@ export class Application {
                     break;
             }
         }
+        // Terminate the application
         process.exit(1);
     }
 
     /**
-     * Event listener for HTTP server "listening" event.
+     * Event listener that manages the event generated when the HTTP server is successfully started.
+     *
+     * @param address Address on which the HTTP server is listening for incoming requests.
+     * @private
      */
-    private onListening(address: string | null | AddressInfo) {
+    private static onListening(address: string | null | AddressInfo): void {
         const bind =
             typeof address === "string" || address === null
                 ? `pipe ${address}`
